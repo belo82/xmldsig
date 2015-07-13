@@ -14,10 +14,10 @@
            [java.security.spec PKCS8EncodedKeySpec]
            [java.security.cert CertificateFactory Certificate X509Certificate X509CertSelector TrustAnchor PKIXBuilderParameters CertPathBuilder]
            [javax.xml.crypto KeySelector]
-           [levipoc X509KeySelector])
+           [xmldsig X509KeySelector])
   (require [clojure.java.io :as io]
-           [clojure.tools.logging :refer [debug info warn error]]
-           [conf-er :refer [config]]))
+           [clojure.tools.logging :refer [debug info warn error]]))
+
 
 (declare load-certificate)
 
@@ -184,7 +184,7 @@
 
 
 (defn ^PrivateKey load-private-key
-  "Loads private key from a file. Defaul algorithm is RSA"
+  "Loads private key from a file. Default algorithm is RSA"
   ([file-path] (load-private-key "RSA" file-path))
   ([algorithm file-path]
    (->> file-path
