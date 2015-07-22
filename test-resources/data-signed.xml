@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><note>
+    <to>John</to>
+    <from>White</from>
+    <heading>Reminder</heading>
+    <body>Buy milk!</body>
+<Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>7qRGz9+yQJxZl2gi7P0L8ejAxLA=</DigestValue></Reference></SignedInfo><SignatureValue>NgbOVfrzvhq06iJsaBdUavt1pH46l4TW1Q+FZy9i0goWLnmtQ444Ys+EG5AJZheHFtJNr5hwEeKs
+gDf93R1r3IqYECUlEaBl2U+VW1s2/ydN9GxcKkrDirk9KOjF1Er8mb5F/f5kSuEfrOOjoq9fSQg+
+nS9N7bFlc15FY8Gu5UQ=</SignatureValue><KeyInfo><X509Data><X509SubjectName>CN=Test User,O=Test Organisation,L=London,ST=England,C=UK</X509SubjectName><X509Certificate>MIICmzCCAgSgAwIBAgIJAN/5SRdR7+JTMA0GCSqGSIb3DQEBBQUAMEIxCzAJBgNVBAYTAlVLMRAw
+DgYDVQQIEwdFbmdsYW5kMQ8wDQYDVQQKEwZCZWxvODIxEDAOBgNVBAMTB2RlbW8gQ0EwHhcNMTUw
+NzE0MjAwNjQ0WhcNMTYwNzEzMjAwNjQ0WjBgMQswCQYDVQQGEwJVSzEQMA4GA1UECBMHRW5nbGFu
+ZDEPMA0GA1UEBxMGTG9uZG9uMRowGAYDVQQKExFUZXN0IE9yZ2FuaXNhdGlvbjESMBAGA1UEAxMJ
+VGVzdCBVc2VyMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAjKNXoDpgI1SC5YUI/jB1/EyP
+0gBfcTpeNpuHn+4F4gKs+fDRy0LLvxcNRbF8frawFc7pCvCC6LX8Xqt25UgQ/OPVe4Y2vY7o67l6
+qVJ0jAKILgLqWjXY/UzhI5C3iG/rGyx1wOoA8nNSotDp8ZqQsKrNwn1h6vdVwEONMkUtAQIDAQAB
+o3sweTAJBgNVHRMEAjAAMCwGCWCGSAGG+EIBDQQfFh1PcGVuU1NMIEdlbmVyYXRlZCBDZXJ0aWZp
+Y2F0ZTAdBgNVHQ4EFgQU/3/oeL3aQmGW1rDO5GwGcIIiDkAwHwYDVR0jBBgwFoAU49Cd3iCGxjN9
+UaYO5q1AXrN17NMwDQYJKoZIhvcNAQEFBQADgYEAyqBEMREgT74HeSpOdlVzV+Njh03eGIhVmlUf
+50sMo6aSkcnzgsRzfFDG9tKfKB95lHzwXF3ZwlY76vX6GQ3KI+cJ3dJAodGk1EBB/hKYtNGjA80F
+2RUR+jLcfMa0+iNFY2QseetrMgtY5RH5umZrHOR5yj3t9GL54dAAjxChi2U=</X509Certificate></X509Data></KeyInfo></Signature></note>

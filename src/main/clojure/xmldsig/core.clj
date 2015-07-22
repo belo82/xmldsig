@@ -1,51 +1,22 @@
 (ns xmldsig.core
-  (:import [javax.xml.parsers DocumentBuilderFactory DocumentBuilder]
-           [javax.xml.crypto.dsig.dom DOMSignContext DOMValidateContext]
+  (:import [javax.xml.crypto.dsig.dom DOMSignContext DOMValidateContext]
            [javax.xml.crypto.dsig XMLSignatureFactory Transform DigestMethod Reference SignedInfo CanonicalizationMethod SignatureMethod XMLSignature]
            [java.util Collections ArrayList HashSet]
            [javax.xml.crypto.dsig.spec TransformParameterSpec C14NMethodParameterSpec]
-           [java.io StringWriter InputStream]
+           [java.io ByteArrayOutputStream]
            [org.w3c.dom Document NodeList]
            [javax.xml.crypto.dsig.keyinfo KeyInfoFactory KeyInfo X509Data]
-           [javax.xml.transform TransformerFactory Transformer]
-           [javax.xml.transform.dom DOMSource]
-           [javax.xml.transform.stream StreamResult]
            [java.security KeyFactory PrivateKey PublicKey Key]
            [java.security.spec PKCS8EncodedKeySpec]
            [java.security.cert CertificateFactory Certificate X509Certificate X509CertSelector TrustAnchor PKIXBuilderParameters CertPathBuilder]
            [javax.xml.crypto KeySelector]
            [xmldsig X509KeySelector])
   (require [clojure.java.io :as io]
-           [clojure.tools.logging :refer [debug info warn error]]))
+           [clojure.tools.logging :refer [debug info warn error]]
+           [xmldsig.xml :as xml]))
 
 
 (declare load-certificate)
-
-(defn- ^InputStream str->is
-  [^String string]
-  (-> string .getBytes (io/input-stream)))
-
-
-(defn- ^Document parse-xml-string
-  [xml-string]
-  (let [doc-builder-factory (doto
-                              (DocumentBuilderFactory/newInstance)
-                              (.setNamespaceAware true))
-        xml-is              (str->is xml-string)]
-    (-> doc-builder-factory
-        ^DocumentBuilder .newDocumentBuilder
-        (.parse xml-is))))
-
-
-(defn- serialise
-  [doc]
-  (let [^TransformerFactory tf (TransformerFactory/newInstance)
-        ^Transformer trans     (.newTransformer tf)
-
-        swriter                (StringWriter.)]
-    (.transform trans (DOMSource. doc) (StreamResult. swriter))
-    (.toString swriter)))
-
 
 (defn- create-x509-data ;; todo possible options what to include in X.509 data
   [^KeyInfoFactory kif ^X509Certificate cert]
@@ -56,12 +27,12 @@
     (.newX509Data kif x509-content)))
 
 
-(defn sign-xml
+(defn sign
   ;; todo: add option to attach/not to attach certificate to the signature
   ;; todo: provide optional parameter with configuration map (signature method, canonicalization method, ...)
-  "Signs XML document using the given private key and attaching given public key or public key and X.509 certificate if certificate is provided"
+  "Signs XML document using the given private key and attaching given X.509 certificate"
   [^PrivateKey private-key ^X509Certificate cert ^String xml-string]
-  (let [doc                                  (parse-xml-string xml-string)
+  (let [doc                                  (xml/parse xml-string)
         public-key                           (.getPublicKey cert)
 
         ^DOMSignContext dsc                  (DOMSignContext. private-key (.getDocumentElement doc))
@@ -101,7 +72,7 @@
         ^XMLSignature signature              (.newXMLSignature fac si ki)]
 
     (.sign signature dsc)
-    (serialise doc)))
+    (xml/serialise doc)))
 
 
 (def ^HashSet get-trust-anchors
@@ -134,11 +105,13 @@
       (catch Throwable th (error th "Couldn't validate certificate path for certificate:" cert)))))
 
 
-(defn- validate-signature
-  "Validates signature on the XML string with key matching key-selector. If signature is valid, returns KeyInfo
-  used for signature validation, otherwise nil"
+(defn validate-signature
+  "Validates signature attached to the XML string with key matching key-selector. If signature is valid, returns KeyInfo
+  used for signature validation, otherwise nil
+
+  *DOES NOT VALIDATE CERTIFICATE CHAIN*"
   [xml-string ^KeySelector key-selector]
-  (let [^Document doc                (parse-xml-string xml-string)
+  (let [^Document doc                (xml/parse xml-string)
         ^NodeList sig-elem-node-list (.getElementsByTagNameNS doc XMLSignature/XMLNS "Signature")]
 
     (when-let [signature-node (.item sig-elem-node-list 0)]
@@ -174,43 +147,43 @@
    (validate-signature xml-string (KeySelector/singletonKeySelector validating-key))))
 
 
-(defn- file->byte-array
-  [file-path]
-  (let [file       (io/file file-path)
-        byte-array (byte-array (.length file))]
-    (with-open [is (io/input-stream file)]
-      (.read is byte-array))
-    byte-array))
+(defn input->byte-array
+  "Tries to coerce input to byte array."
+  [input]
+  (with-open [out (ByteArrayOutputStream.)]
+    (-> input
+        io/input-stream
+        (io/copy out))
+    (.toByteArray out)))
 
 
 (defn ^PrivateKey load-private-key
-  "Loads PKCS#8 encoded private key from a file. Assumes that the key algorithm is RSA"
-  ([file-path] (load-private-key "RSA" file-path))
-  ([algorithm file-path]
-   (->> file-path
-     file->byte-array
-     PKCS8EncodedKeySpec.
-     (.generatePrivate
-       (KeyFactory/getInstance algorithm)))))
+  "Loads PKCS#8 encoded private key from the input. Assumes that the key algorithm is RSA. Accepts any input valid for clojure.java.io/input-stream"
+  [private-key]
+  (->> private-key
+       input->byte-array
+       PKCS8EncodedKeySpec.
+       (.generatePrivate
+         (KeyFactory/getInstance "RSA"))))
 
 
 (defn ^PublicKey load-public-key
-  "Loads PKCS#8 encoded public key from a file. Assumes that the key algorithm is RSA"
-  [file-path]
-  (->> file-path
-    file->byte-array
-    PKCS8EncodedKeySpec.
-    (.generatePublic
-      (KeyFactory/getInstance "RSA"))))
+  "Loads PKCS#8 encoded public key from a file. Assumes that the key algorithm is RSA. Accepts any input valid for clojure.java.io/input-stream"
+  [pub-key]
+  (->> pub-key
+       input->byte-array
+       PKCS8EncodedKeySpec.
+       (.generatePublic
+         (KeyFactory/getInstance "RSA"))))
 
 
 (defn ^X509Certificate load-certificate
   "Loads X.509 certificate from the data passed as an argument. Argument can by anything suppported by clojure.java.io/input-stream"
-  [cert-data]
-  (->> cert-data
-    io/input-stream
-    (.generateCertificate
-      (CertificateFactory/getInstance "X.509"))))
+  [certificate]
+  (->> certificate
+       io/input-stream
+       (.generateCertificate
+         (CertificateFactory/getInstance "X.509"))))
 
 
 (defn ^PublicKey get-public-key
