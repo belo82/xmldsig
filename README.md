@@ -1,22 +1,6 @@
 # xmldsig
 
-Set of functions to make working with XMLDsig Java API easier
-
-## Usage
-
-todo
-
-## Testing
-
-todo
-
-## Issues
-
-todo
-
-## License
-
-todo
+Library to make working with XMLDsig Java API easier
 
 ## Generating private keys and certificates
 
@@ -87,4 +71,20 @@ Last thing we need to do is sign created CSRs with CA's key and generate certifi
 ### Converting key to PKCS format
 
     openssl pkcs8 -topk8 -inform PEM -outform DER -in client-key.pem -nocrypt > client-key.pkcs
+    
+## Usage
+
+todo
+
+## Testing
+
+todo
+
+## Issues
+
+todo
+
+## License
+
+todo
     
